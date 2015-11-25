@@ -31,6 +31,9 @@ app.post('/alert', function (req, res) {
           return markUnhealthy(instanceIp)
         })
         .then(() => {
+          return wait(300000)
+        })
+        .then(() => {
           return killInstance(instanceId)
         })
     })
@@ -112,6 +115,13 @@ function markUnhealthy (instanceIp) {
       if (err) { return reject(new Error(err + ':' + err.stderr)) }
       resolve(stdout)
     })
+  })
+}
+
+function wait (timeInMs) {
+  console.log('wait for', timeInMs, 'ms')
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, timeInMs)
   })
 }
 
