@@ -15,9 +15,7 @@ app.post('/alert', function (req, res) {
   console.log('woof, alert found, will try to help', req.body)
   res.send('OK')
   Promise.resolve()
-    .then(() => {
-      validateInput(req.body, ['event_tags', 'alert_transition', 'secret', 'title', 'link', 'event_type'])
-    })
+    .then(() => validateInput(req.body, ['event_tags', 'alert_transition', 'secret', 'title', 'link', 'event_type']))
     .then(() => {
       console.log('finding instanceId')
       let tagsArray = req.body.event_tags.split(',')
@@ -30,20 +28,13 @@ app.post('/alert', function (req, res) {
         .then(instanceIp => {
           return markUnhealthy(instanceIp)
         })
-        .then(() => {
-          return wait(300000)
-        })
-        .then(() => {
-          return killInstance(instanceId)
-        })
+        .then(() => killInstance(instanceId))
     })
     .catch(err => {
       console.error('I have failed you master', err)
       error.report(err)
     })
-    .then(() => {
-      console.log('I am done')
-    })
+    .then(() => console.log('I am done'))
 })
 
 app.all('*', function (req, res) {
@@ -115,13 +106,6 @@ function markUnhealthy (instanceIp) {
       if (err) { return reject(new Error(err + ':' + err.stderr)) }
       resolve(stdout)
     })
-  })
-}
-
-function wait (timeInMs) {
-  console.log('wait for', timeInMs, 'ms')
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, timeInMs)
   })
 }
 
