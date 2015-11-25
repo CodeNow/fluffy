@@ -19,8 +19,7 @@ app.post('/alert', function (req, res) {
     .then(() => {
       console.log('finding instanceId')
       let tagsArray = req.body.event_tags.split(',')
-      let instanceId = tagsArray.find(i => { return ~i.indexOf('host') })
-      instanceId = instanceId.split(':')[1]
+      let instanceId = tagsArray.find(i => { return ~i.indexOf('host') }).split(':')[1]
       if (!instanceId) {
         throw new Error('instanceId not found')
       }
