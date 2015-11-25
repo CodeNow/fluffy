@@ -1,0 +1,30 @@
+{
+  "name": "fluffy",
+  "version": "0.0.1",
+  "description": "Fluffy is a large, vicious, three-headed dog who watches datadog and responds to alerts",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./index.js",
+    "test": "NODE_ENV=test lab -v -c -t 100 ./test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeNow/fluffy.git"
+  },
+  "keywords": [
+    "fluffy"
+  ],
+  "author": "Anandkumar Patel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CodeNow/fluffy/issues"
+  },
+  "homepage": "https://github.com/CodeNow/fluffy#readme",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "error-cat": "^1.4.0",
+    "express": "^4.13.3",
+    "ip": "^1.1.0",
+    "standard": "^5.4.1"
+  }
+}
