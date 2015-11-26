@@ -16,23 +16,10 @@ app.post('/alert', function (req, res) {
   res.send('OK')
   Promise.resolve()
     .then(() => validateInput(req.body, ['event_tags', 'alert_transition', 'secret', 'title', 'link', 'event_type']))
-    .then(() => {
-      console.log('finding instanceId')
-      let tagsArray = req.body.event_tags.split(',')
-      let instanceId = tagsArray.find(i => { return ~i.indexOf('host') }).split(':')[1]
-      if (!instanceId) {
-        throw new Error('instanceId not found')
-      }
-      return getInstanceIp(instanceId)
-        .then(instanceIp => {
-          return markUnhealthy(instanceIp)
-        })
-        .then(() => killInstance(instanceId))
-    })
-    .catch(err => {
-      console.error('I have failed you master', err)
-      error.report(err)
-    })
+    .then(() => getInstanceId(req.body))
+    .then(instanceId => runRecovery(instanceId))
+    .catch(err => console.error('I have failed you master', err))
+    .catch(err => error.report(err))
     .then(() => console.log('I am done'))
 })
 
@@ -61,48 +48,62 @@ function validateInput (data, keys) {
   }
 }
 
+function getInstanceId (data) {
+  console.log('finding instanceId')
+  let tagsArray = data.event_tags.split(',')
+  let instanceId = tagsArray.find(i => { return ~i.indexOf('host') }).split(':')[1]
+  if (!instanceId) {
+    throw new Error('instanceId not found')
+  }
+
+  return instanceId
+}
+function runRecovery (instanceId) {
+  return getInstanceIp(instanceId)
+    .then(instanceIp => markUnhealthy(instanceIp))
+    .then(() => killInstance(instanceId))
+}
+
 function killInstance (instanceId) {
-  console.log('killInstance id:', instanceId)
   return new Promise((resolve, reject) => {
     let cmd = 'echo y | docks kill -e ' + env + ' -i ' + instanceId
-    console.log('trying', cmd)
+    console.log('killInstance id:', instanceId, 'trying', cmd)
+
     exec(cmd, (err, stdout, stderr) => {
-      console.log('--output (err):', err)
-      console.log('--output (stdout):', stdout)
-      console.log('--output (stderr) :', stderr)
+      console.log('--output (err):', err, 'stdout:', stdout, 'stderr', stderr)
       if (err) { return reject(new Error(err + ':' + err.stderr)) }
+
       resolve()
     })
   })
 }
 
 function getInstanceIp (instanceId) {
-  console.log('getInstanceIp from id:', instanceId)
   return new Promise((resolve, reject) => {
     let cmd = 'docks aws -e ' + env + " | awk '/" + instanceId + "/{print $6}'"
-    console.log('trying', cmd)
+    console.log('getInstanceIp from id:', instanceId, 'trying', cmd)
+
     exec(cmd, (err, stdout, stderr) => {
-      console.log('--output (err):', err)
-      console.log('--output (stdout):', stdout)
-      console.log('--output (stderr) :', stderr)
+      console.log('--output (err):', err, 'stdout:', stdout, 'stderr', stderr)
       if (err) { return reject(new Error(err + ':' + err.stderr)) }
+
       stdout = stdout.replace(/\n/, '')
       if (!ip.isV4Format(stdout)) { return reject(new Error('ip not found')) }
+
       resolve(stdout)
     })
   })
 }
 
 function markUnhealthy (instanceIp) {
-  console.log('markUnhealthy with ip:', instanceIp)
   return new Promise((resolve, reject) => {
     let cmd = 'echo y | docks unhealthy -e ' + env + ' -i ' + instanceIp
-    console.log('trying', cmd)
+    console.log('markUnhealthy with ip:', instanceIp, 'trying', cmd)
+
     exec(cmd, (err, stdout, stderr) => {
-      console.log('--output (err):', err)
-      console.log('--output (stdout):', stdout)
-      console.log('--output (stderr) :', stderr)
+      console.log('--output (err):', err, 'stdout:', stdout, 'stderr', stderr)
       if (err) { return reject(new Error(err + ':' + err.stderr)) }
+
       resolve(stdout)
     })
   })
