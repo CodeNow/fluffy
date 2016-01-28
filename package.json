@@ -21,10 +21,14 @@
   },
   "homepage": "https://github.com/CodeNow/fluffy#readme",
   "dependencies": {
+    "101": "^1.2.0",
     "body-parser": "^1.14.1",
+    "bunyan": "^1.5.1",
+    "callsite": "^1.0.0",
     "error-cat": "^1.4.0",
     "express": "^4.13.3",
     "ip": "^1.1.0",
+    "loadenv": "^2.1.0",
     "standard": "^5.4.1"
   }
 }
