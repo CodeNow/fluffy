@@ -5,9 +5,9 @@ var bodyParser = require('body-parser')
 var ErrorCat = require('error-cat')
 var put = require('101/put')
 
-var log = require('./utils/logger.js')
-var UnhealthyHandler = require('./handlers/unhealthy.js')
-var Event = require('./utils/event.js')
+var Event = require('./lib/utils/event.js')
+var log = require('./lib/utils/logger.js')()
+var UnhealthyHandler = require('./lib/handlers/unhealthy.js')
 
 var error = new ErrorCat()
 
@@ -20,7 +20,7 @@ app.use(bodyParser.json())
  * @return {null}         no return
  */
 app.post('/alert', function (req, res) {
-  let logData = { event: req.body }
+  let logData = { req: req }
   log.info(logData, 'alert received')
   // respond OK then process in background
   res.send('OK')
@@ -36,13 +36,13 @@ app.post('/alert', function (req, res) {
     })
     .then(() => log.info(logData, 'alert handled'))
     .catch(err => {
-      log.error(put({ err: err }, logData), 'alert handing failed')
+      log.error(put({ err: err.message, stack: err.stack }, logData), 'alert handing failed')
       error.report(err)
     })
 })
 
 app.all('*', function (req, res) {
-  log.error({ body: res.body, url: res.url }, 'invalid endpoint')
+  log.error({ req: req }, 'invalid endpoint')
   res.send('invalid endpoint')
 })
 
